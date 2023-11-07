@@ -20,10 +20,11 @@ class Particle(pg.sprite.Sprite):
     
     VENT_LOCATION_XY = (320, 306)
     IO_SURFACE_Y = 348
-    GRAVITY = 0.5 # pixels per frame added to dy each game loop
-    VELOCITY_SO2 = 8 # pixels per frame
+    GRAVITY = 0.7 # pixels per frame added to dy each game loop
+    VELOCITY_SO2 = 12 # pixels per frame
 
-    vel_scalar = {'S02': 1, 'CO2': 1.45, 'H2S': 1.9, 'H20': 3.6}
+    # vel_scalar = {'S02': 1, 'CO2': 1.45, 'H2S': 1.9, 'H20': 3.6}
+    vel_scalar = {'S02': 1.71, 'CO2': 1.72, 'H2S': 1.73, 'H20': 1.74}
 
 
     def __init__(self, screen, background, lifespan):
@@ -33,14 +34,11 @@ class Particle(pg.sprite.Sprite):
         self.image = pg.Surface((4,4))
         self.rect = self.image.get_rect()
         # for all gasses
-        #self.gas = random.choice(list(Particle.gas_colors.keys()))
+        self.gas = random.choice(list(Particle.gas_colors.keys()))
         # self.color = Particle.gas_colors[self.gas]
-        #print(random.choice('S02', 'CO2'))
-        # self.gas = random.choice(list('S02', 'CO2'))
-        self.gas = 'CO2'
-        self.color = random.choice(list(Particle.gas_colors.values()))
+
         self.vel = Particle.VELOCITY_SO2 * Particle.vel_scalar[self.gas]
-        self.color = Particle.interpolate_color((0, 60, 0), (255, 80, 80), self.vel)
+        self.color = Particle.interpolate_color((255, 120, 80), (255, 60, 60), self.vel)
         self.x, self.y = Particle.VENT_LOCATION_XY
         self.lifespan = lifespan
         self.initial_velocity = self.vel
@@ -78,11 +76,6 @@ class Particle(pg.sprite.Sprite):
         if self.y < 0 or self.y > self.screen.get_width():
             self.kill()
 
-        for segment in self.segments:
-            segment['lifespan'] -= 1
-            pg.draw.line(self.background, self.color, segment['start_pos'], segment['end_pos'])
-            if segment['lifespan'] <= 0:
-                self.segments.remove(segment)
 
         velocity_magnitude = math.sqrt(self.dx**2 + self.dy**2)
 
@@ -90,7 +83,7 @@ class Particle(pg.sprite.Sprite):
         print(normalized_velocity)
 
         
-        self.color = Particle.interpolate_color((60, 0, 0), (255, 80, 80), normalized_velocity)
+        self.color = Particle.interpolate_color((255, 120, 80), (255, 60, 60), normalized_velocity)
 
         #self.image.fill(self.color)
 
@@ -98,7 +91,7 @@ class Particle(pg.sprite.Sprite):
     def interpolate_color(color1, color2, factor):
         # Interpolate between 2 colors
 
-        factor = min(max(factor, 0), 1)
+        factor = min(max(factor, 0), 0.8)
 
         return (
             int(color1[0] + (color2[0] - color1[0]) * factor),
@@ -110,9 +103,8 @@ class Particle(pg.sprite.Sprite):
 def main():
     # Set up and run screen and loop
     screen = pg.display.set_mode((639, 360))
-    pg.display.set_caption('IO Volcano Simulator')
+    pg.display.set_caption('Volcano Simulator')
     background = pg.image.load('tvashtar_plume.gif').convert()
-    static_background = background.copy()
 
     # Set up color-coded legend
     legend_font = pg.font.SysFont('None', 24)
@@ -126,7 +118,7 @@ def main():
 
     while True:
         clock.tick(60)
-        particles.add(Particle(screen, background, lifespan=60))
+        particles.add(Particle(screen, background, lifespan=80))
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
